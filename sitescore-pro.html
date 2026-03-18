@@ -472,8 +472,42 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <label class="form-label">Client Website URL</label>
       <div class="url-wrap">
         <span class="url-icon">🌐</span>
-        <input type="text" id="url-inp" class="form-input" placeholder="https://drjohnsonmedical.com" style="padding-left:44px">
+        <input type="text" id="url-inp" class="form-input" placeholder="https://nrs.vegas or any business website" style="padding-left:44px" onblur="previewIndustry()">
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">
+        Business Type
+        <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--wmut);font-size:.75rem;margin-left:8px">— AI will detect automatically, or type it yourself to override</span>
+      </label>
+      <div style="position:relative">
+        <input type="text" id="ind-inp" class="form-input" placeholder="e.g. HVAC Company, Dental Practice, Roofing, Law Firm..." list="ind-suggestions" autocomplete="off">
+        <datalist id="ind-suggestions">
+          <option value="HVAC Company">
+          <option value="Dental Practice">
+          <option value="Medical / Doctor Office">
+          <option value="Roofing Company">
+          <option value="Law Firm">
+          <option value="Chiropractic">
+          <option value="Medical Spa">
+          <option value="Physical Therapy">
+          <option value="Plumbing Company">
+          <option value="Auto Repair Shop">
+          <option value="Real Estate Agent">
+          <option value="Accounting Firm">
+          <option value="Gym / Fitness Studio">
+          <option value="Restaurant">
+          <option value="Veterinary Practice">
+          <option value="Landscaping Company">
+          <option value="Electrician">
+          <option value="Insurance Agency">
+          <option value="Mortgage Broker">
+          <option value="Optometry Practice">
+          <option value="General Business">
+        </datalist>
+        <div id="ind-detect-badge" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.7rem;color:var(--green);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:2px 8px;border-radius:100px">✓ AI Detected</div>
+      </div>
+      <div id="ind-hint" style="font-size:.72rem;color:var(--wmut);margin-top:5px">Leave blank to let AI detect the industry automatically from the website.</div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -481,15 +515,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <input type="text" id="agency-inp" class="form-input" value="ReGenEdge Ventures LLC" readonly style="opacity:.65;cursor:default">
       </div>
       <div class="form-group">
-        <label class="form-label">Industry Focus</label>
-        <select id="ind-sel" class="form-select">
-          <option>Medical / Doctor's Office</option>
-          <option>Dental Practice</option>
-          <option>Chiropractic</option>
-          <option>Medical Spa</option>
-          <option>Physical Therapy</option>
-          <option>General Business</option>
-        </select>
+        <label class="form-label">Geographic Market</label>
+        <input type="text" id="geo-inp" class="form-input" placeholder="e.g. Las Vegas NV, Miami FL, Chicago IL">
       </div>
     </div>
     <button class="btn-primary" style="width:100%;padding:16px;font-size:1.1rem;border-radius:12px;margin-top:4px" onclick="startAudit()">Analyze Website →</button>
@@ -691,6 +718,38 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 // SETTINGS
 // ============================================================
+// Pre-fill industry field from URL domain on blur
+function previewIndustry() {
+  var url = document.getElementById('url-inp').value.trim();
+  var indInp = document.getElementById('ind-inp');
+  var hint = document.getElementById('ind-hint');
+  if (!url || indInp.value.trim()) return; // don't overwrite if user typed something
+  // Show a helpful hint
+  hint.textContent = 'AI will detect the business type automatically when you click Analyze. You can also type it manually above to override.';
+}
+
+// Show confirmed detection badge when user types industry manually
+document.addEventListener('DOMContentLoaded', function() {
+  var indInp = document.getElementById('ind-inp');
+  if (indInp) {
+    indInp.addEventListener('input', function() {
+      var badge = document.getElementById('ind-detect-badge');
+      var hint = document.getElementById('ind-hint');
+      if (this.value.trim()) {
+        badge.style.display = 'block';
+        badge.textContent = '✓ Manual Override';
+        badge.style.color = 'var(--gold)';
+        badge.style.background = 'rgba(201,168,76,.1)';
+        badge.style.borderColor = 'rgba(201,168,76,.3)';
+        hint.textContent = 'AI will use your input as the confirmed business type.';
+      } else {
+        badge.style.display = 'none';
+        hint.textContent = 'Leave blank to let AI detect the industry automatically from the website.';
+      }
+    });
+  }
+});
+
 function loadSettings() {
   var s = JSON.parse(localStorage.getItem('ss_settings') || '{}');
   if (s.phone) document.getElementById('set-phone').value = s.phone;
@@ -790,12 +849,13 @@ function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 // ============================================================
 async function startAudit() {
   var url = document.getElementById('url-inp').value.trim();
-  var industry = document.getElementById('ind-sel').value;
+  var industryOverride = document.getElementById('ind-inp').value.trim();
+  var geo = document.getElementById('geo-inp').value.trim();
   if (!url) { showLandErr('Please enter a website URL.'); return; }
   var apiKey = sessionStorage.getItem('ss_api');
   if (!apiKey) { openModal('m-api'); return; }
   currentUrl = url;
-  currentIndustry = industry;
+  currentIndustry = industryOverride;
   openBlockIdx = -1;
   showScreen('load');
   document.getElementById('load-url').textContent = normUrl(url);
@@ -803,7 +863,7 @@ async function startAudit() {
     // Run animation AND API calls in parallel — no waiting 14s before fetching
     var results = await Promise.allSettled([
       runLoadAnim(),
-      callClaude(url, industry, apiKey),
+      callClaude(url, industryOverride, geo, apiKey),
       callPageSpeed(url)
     ]);
     // Index 0 = animation (always fulfilled), 1 = Claude, 2 = PageSpeed
@@ -847,10 +907,15 @@ async function runLoadAnim() {
 // ============================================================
 // CLAUDE API
 // ============================================================
-async function callClaude(url, industry, apiKey) {
-  var sys = 'You are an elite digital marketing analyst and business intelligence researcher. A marketing agency uses your analysis to sell monthly retainer services to ANY type of business. You specialize in identifying business type, researching real industry-specific customer lifetime value data, and producing compelling audits that are tailored to the specific business you are analyzing. Be honest, specific, and constructive. Always find real fixable problems. Write professionally, urgently, and empathetically — like a trusted advisor who genuinely wants this business to grow. IMPORTANT: Never assume the business is medical — identify the actual business type from the URL and content, then tailor everything accordingly.';
+async function callClaude(url, industryOverride, geo, apiKey) {
+  var sys = 'You are an elite digital marketing analyst and business intelligence researcher. A marketing agency uses your analysis to sell monthly retainer services to ANY type of business. You specialize in identifying business type from website content, researching real industry-specific customer lifetime value data, and producing compelling audits tailored to the specific business. Be honest, specific, and constructive. Write professionally, urgently, and empathetically. CRITICAL RULES: (1) You MUST identify the business from the actual website URL and content — never guess based on the city name or domain alone. A Las Vegas URL could be HVAC, a dentist, a restaurant, anything — read the actual site. (2) If the user has provided a manual business type override, that is AUTHORITATIVE — use it exactly and do not contradict it. (3) Never default to adult entertainment, nightlife, or gambling just because the city is Las Vegas or the domain sounds edgy. (4) Base CLV figures on real, researched industry averages for the confirmed business type only.';
 
-  var usr = 'Perform a comprehensive website audit AND customer lifetime value analysis for: ' + normUrl(url) + '\nDropdown industry hint: ' + industry + '\n\nIMPORTANT: First identify the ACTUAL business type from the URL and website content — do not rely solely on the dropdown. The business could be anything: dentist, roofer, plumber, law firm, gym, restaurant, auto repair, real estate agent, accountant, spa, chiropractor, etc.\n\nReturn ONLY a valid JSON object. No markdown, no backticks, no preamble.\n\nThe JSON must have these exact top-level keys:\n\n=== BUSINESS INTELLIGENCE ===\n- businessType: string (the actual detected business type, e.g. "Dental Practice", "Roofing Company", "Personal Injury Law Firm")\n- businessTypeIcon: string (single relevant emoji)\n- clientWord: string (the correct word for this business customers, e.g. "patients", "clients", "customers", "homeowners", "members")\n- industryContext: string (2 sentences describing this business type and its digital marketing landscape)\n\n=== CUSTOMER LIFETIME VALUE ===\n- clv: object with these keys:\n  - minCLV: number (conservative customer lifetime value in dollars, based on real industry data)\n  - maxCLV: number (optimistic customer lifetime value in dollars)\n  - avgCLV: number (realistic midpoint)\n  - visitFrequency: string (how often a typical customer returns, e.g. "2x per year")\n  - avgTransactionValue: string (typical spend per visit/job, e.g. "$300-500 per visit")\n  - avgRetentionYears: number (how many years a typical customer stays)\n  - referralMultiplier: string (referral value, e.g. "Each client refers 1-2 others over their lifetime")\n  - clvBreakdown: array of objects {label, value} showing how CLV was calculated (e.g. [{label:"Annual spend", value:"$800/year"},{label:"Avg retention", value:"8 years"},{label:"Referral value", value:"$1,200"},{label:"Total CLV", value:"$7,600"}])\n  - geographicNote: string (1 sentence noting how geography/market size affects these numbers)\n  - industrySource: string (brief note on what data/reasoning supports these CLV figures)\n\n=== AUDIT SCORES (10 categories) ===\n- overallScore: set to 0\n- overallGrade: set to empty string\n- trafficEstimate: string like "200-500"\n- trafficPotential: string like "1500-3000"\n- competitorGap: string 2 sentences — use the correct client word\n- estimatedNewClients: number (realistic new clients per month after optimization — use industry-appropriate terminology)\n- executiveSummary: string 2 paragraphs — write directly to THIS type of business owner, use correct client word, mention specific CLV figures to make the ROI case\n- priorityFixes: array of 3 objects {title, whyItMatters, timeToFix, expectedOutcome} — use industry-specific language\n- agencyRecommendations: array of 5 objects {service, icon, pitch, outcome, timeline, priceRange} — pitch written for THIS business type\n- categories: array of exactly 10 objects in this order: SEO Foundation, AI Search Optimization, Page Speed & Core Web Vitals, Mobile Responsiveness, Content Quality & Freshness, Local SEO & Google Business Profile, Trust & Authority Signals, Social Proof & Engagement, Lead Capture & Conversion, Technical SEO Health\n\nEach category object must have:\n- name: string\n- score: number 1-10\n- explanation: string 2-3 sentences — specific to this business type\n- quickWin: string\n- timeline: string\n- actionItems: array of 3 strings\n- agencyService: string\n- businessOutcome: string — use correct client word and reference CLV where relevant\n- monthlyValue: string — use the actual CLV figures researched above\n\nBe honest and critical. Use this business type context throughout every field. Return pure JSON only.';
+  var industryLine = industryOverride
+    ? 'BUSINESS TYPE OVERRIDE (user confirmed — this is authoritative, do not change it): ' + industryOverride
+    : 'Business type: AUTO-DETECT from website URL and content. Do NOT guess based on city name or domain. Identify the actual business by reading the site.';
+  var geoLine = geo ? 'Geographic market: ' + geo + ' (use this to calibrate CLV and competitor landscape)' : 'Geographic market: unknown (use national averages)';
+
+  var usr = 'Perform a comprehensive website audit AND customer lifetime value analysis for: ' + normUrl(url) + '\n' + industryLine + '\n' + geoLine + '\n\nCRITICAL: If the user provided a business type override above, you MUST use exactly that business type throughout the entire report. Do not second-guess or change it.\n\nIMPORTANT: Identify the ACTUAL business type from the URL and website content — do not rely on city name or domain alone. The business could be anything.\n\nReturn ONLY a valid JSON object. No markdown, no backticks, no preamble.\n\nThe JSON must have these exact top-level keys:\n\n=== BUSINESS INTELLIGENCE ===\n- businessType: string (confirmed business type — if user provided override, use that EXACTLY)\n- businessTypeIcon: string (single relevant emoji for this business)\n- clientWord: string (correct word for customers: patients/clients/customers/homeowners/members/guests/riders etc)\n- industryContext: string (2 sentences describing this specific business type and its digital marketing landscape — NOT adult entertainment unless that is what the override says)\n\n=== CUSTOMER LIFETIME VALUE ===\n- clv: object with:\n  - minCLV: number (conservative CLV in dollars based on real data for confirmed business type)\n  - maxCLV: number (optimistic CLV)\n  - avgCLV: number (realistic midpoint)\n  - visitFrequency: string (typical return rate for this business type)\n  - avgTransactionValue: string (typical spend per job/visit/transaction)\n  - avgRetentionYears: number (years a typical customer stays)\n  - referralMultiplier: string (referral value sentence)\n  - clvBreakdown: array of 4 objects {label, value} showing the CLV math (annual spend, retention years, referral value, total CLV)\n  - geographicNote: string (1 sentence on how the geographic market affects CLV)\n  - industrySource: string (what data supports these figures for this business type)\n\n=== AUDIT ===\n- overallScore: 0\n- overallGrade: empty string\n- trafficEstimate: string like "200-500"\n- trafficPotential: string like "1500-3000"\n- competitorGap: string 2 sentences using correct client word\n- estimatedNewClients: number (realistic new clients/month after optimization)\n- executiveSummary: string 2 paragraphs written to THIS business owner, using CLV figures, correct client word\n- priorityFixes: array of 3 {title, whyItMatters, timeToFix, expectedOutcome}\n- agencyRecommendations: array of 5 {service, icon, pitch, outcome, timeline, priceRange} tailored to this business\n- categories: array of exactly 10 objects: SEO Foundation, AI Search Optimization, Page Speed & Core Web Vitals, Mobile Responsiveness, Content Quality & Freshness, Local SEO & Google Business Profile, Trust & Authority Signals, Social Proof & Engagement, Lead Capture & Conversion, Technical SEO Health\n\nEach category: name, score(1-10), explanation(2-3 sentences for this business), quickWin, timeline, actionItems(3 strings), agencyService, businessOutcome, monthlyValue\n\nReturn pure JSON only.';
 
   var resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1308,7 +1373,7 @@ function renderCLV(report) {
         '<div class="clv-ind-name">' + biz + '</div>' +
       '</div>' +
       '<div class="clv-headline">' +
-        '<div class="clv-h1">Each new ' + cw + ' is worth $' + minCLV.toLocaleString() + '–$' + maxCLV.toLocaleString() + ' to your business</div>' +
+        '<div class="clv-h1">Each new ' + cw + ' is worth $' + minCLV.toLocaleString() + '–$' + maxCLV.toLocaleString() + ' over their lifetime</div>' +
         '<div class="clv-h2">' + (report.industryContext || 'Based on industry research for this business type, accounting for transaction value, retention rate, and referral potential.') + '</div>' +
       '</div>' +
     '</div>' +
