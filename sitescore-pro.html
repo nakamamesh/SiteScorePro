@@ -1,4 +1,4 @@
-
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -584,8 +584,135 @@ body::before {
   gap: 16px;
 }
 @media (max-width: 768px) { .score-grid { grid-template-columns: 1fr; } }
-@media (min-width: 1100px) { .score-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1400px) { .score-grid { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 1100px) { .score-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Score Summary Table */
+.score-summary-table {
+  width: 100%;
+  background: var(--navy-3);
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.score-summary-header {
+  display: grid;
+  grid-template-columns: 2fr 80px 120px 1fr;
+  padding: 12px 24px;
+  background: var(--navy-4);
+  border-bottom: 1px solid var(--gold-border);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  font-weight: 600;
+}
+.score-summary-row {
+  display: grid;
+  grid-template-columns: 2fr 80px 120px 1fr;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.score-summary-row:last-child { border-bottom: none; }
+.score-summary-row:hover { background: rgba(201,168,76,0.05); }
+.score-summary-row.active { background: rgba(201,168,76,0.08); }
+.ssr-name { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 500; }
+.ssr-icon { font-size: 1.1rem; }
+.ssr-score { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; }
+.ssr-bar-wrap { padding-right: 16px; }
+.ssr-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.ssr-bar-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); width: 0; }
+.ssr-status { font-size: 0.75rem; }
+
+.score-total-bar {
+  background: linear-gradient(135deg, var(--navy-4), rgba(201,168,76,0.08));
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+.stb-left {}
+.stb-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--gold); margin-bottom: 8px; }
+.stb-breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.stb-pill {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-weight: 600;
+}
+.stb-pill-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.stb-pill-amber { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.stb-pill-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.stb-pill-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.stb-total-bar { height: 12px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+.stb-total-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--red), var(--amber), var(--gold)); transition: width 2s cubic-bezier(0.4,0,0.2,1); width: 0; }
+.stb-right { text-align: center; flex-shrink: 0; }
+.stb-score-big { font-family: var(--font-display); font-size: 3.5rem; font-weight: 700; color: var(--gold); line-height: 1; }
+.stb-score-label { font-size: 0.75rem; color: var(--white-muted); margin-top: 4px; }
+.stb-verdict { font-size: 0.8rem; color: var(--white-dim); margin-top: 8px; max-width: 200px; text-align: center; }
+
+/* Expanded detail panel */
+.cat-detail-panel {
+  background: var(--navy-4);
+  border: 1px solid var(--gold-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  display: none;
+}
+.cat-detail-panel.open { display: block; }
+.cdp-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: var(--navy-3);
+}
+.cdp-score-circle {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.cdp-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--white); }
+.cdp-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .cdp-body { grid-template-columns: 1fr; } }
+.cdp-section-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+.cdp-text { font-size: 0.85rem; color: var(--white-dim); line-height: 1.7; }
+.cdp-importance-box {
+  background: rgba(201,168,76,0.06);
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.cdp-benefit-box {
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 8px;
+  padding: 14px;
+}
+.cdp-full-row { grid-column: 1 / -1; }
+.cdp-actions { grid-column: 1 / -1; }
+.cdp-quickwin {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.cdp-quickwin-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 6px; font-weight: 600; }
 
 .score-card {
   background: var(--navy-3);
@@ -1205,9 +1332,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="section" id="section-scores">
       <div class="section-header">
         <h2 class="section-title">Performance Scores</h2>
-        <span class="section-subtitle">10 categories analyzed</span>
+        <span class="section-subtitle">10 categories · scored 1–10 each</span>
       </div>
-      <div class="score-grid" id="score-grid"></div>
+      <!-- Total Score Bar -->
+      <div class="score-total-bar" id="score-total-bar"></div>
+      <!-- Summary Table -->
+      <div class="score-summary-table" id="score-summary-table"></div>
+      <!-- Expanded Detail Panels -->
+      <div id="score-detail-panels"></div>
     </div>
 
     <!-- Section 2: Priority Action Panel -->
@@ -1807,69 +1939,237 @@ function normalizeCategories(report) {
     .map(([name, data]) => ({ name, ...data }));
 }
 
+const CATEGORY_IMPORTANCE = {
+  'SEO Foundation': {
+    importance: 'SEO Foundation is the backbone of all organic visibility. Without proper title tags, meta descriptions, H1/H2 structure, and keyword targeting, search engines cannot understand what your practice offers — making you invisible to patients actively searching for your services.',
+    benefit: 'A score of 8–10 means your practice appears for high-intent searches like "family doctor near me" or "urgent care [city]." Every point gained here directly increases the number of new patients finding you organically — without paying for ads.',
+    weight: 'High Impact'
+  },
+  'AI Search Optimization': {
+    importance: 'AI-powered search (ChatGPT, Google AI Overviews, Perplexity) now answers millions of healthcare questions daily. Practices without structured data and FAQ content are completely invisible in these new AI results — losing patients before they ever reach Google.',
+    benefit: 'Optimizing for AI search puts your practice in AI-generated answers when patients ask "what's the best doctor for back pain near me?" — a brand new, rapidly growing patient acquisition channel that most competitors haven't touched yet.',
+    weight: 'Emerging Critical'
+  },
+  'Page Speed & Core Web Vitals': {
+    importance: 'Google uses page speed as a direct ranking factor. A slow site loses both search rankings AND patients — 53% of mobile users abandon sites that take more than 3 seconds to load. For a medical practice, every abandoned visit is a lost appointment.',
+    benefit: 'A fast site (score 8–10) means higher rankings, lower bounce rates, and more patients who actually book. Speed improvements often deliver the fastest ROI of any technical fix — sometimes within days of implementation.',
+    weight: 'High Impact'
+  },
+  'Mobile Responsiveness': {
+    importance: 'Over 70% of healthcare searches happen on mobile. If your site is hard to navigate on a phone, patients leave immediately — and Google knows it. Poor mobile experience is one of the most common reasons practices lose rankings to competitors.',
+    benefit: 'A fully mobile-optimized site with click-to-call buttons and easy booking converts mobile visitors into appointments. Practices that fix mobile see an immediate increase in call volume — often within the first 30 days.',
+    weight: 'High Impact'
+  },
+  'Content Quality & Freshness': {
+    importance: 'Google's E-E-A-T (Experience, Expertise, Authority, Trust) standards for medical content are strict. Thin, outdated, or generic content signals low authority — causing rankings to drop. Fresh, expert content is essential for healthcare practices to rank.',
+    benefit: 'Rich blog posts, patient education articles, and service pages establish your doctors as trusted experts. Each new article is a new entry point to your website — practices with active blogs attract 3–5x more organic traffic over 12 months.',
+    weight: 'Long-Term Growth'
+  },
+  'Local SEO & Google Business Profile': {
+    importance: 'For medical practices, local search IS the search. When patients look for a doctor, they want someone nearby. Your Google Business Profile is often the very first thing they see — before your website. An unoptimized profile means you don't appear in the map pack at all.',
+    benefit: 'A fully optimized GBP with consistent NAP, photos, services, and regular posts can put you in the top 3 map pack results — the most clicked positions in local search. This single improvement can double inbound call volume within 90 days.',
+    weight: 'Critical'
+  },
+  'Trust & Authority Signals': {
+    importance: 'Medical websites are held to the highest trust standards by both Google and patients. Patients are making health decisions — they need to see credentials, staff photos, certifications, and HIPAA compliance. Missing trust signals cause high bounce rates and Google ranking penalties.',
+    benefit: 'Establishing clear authority signals — doctor bios, credentials, awards, and testimonials — increases both conversion rates and rankings. Patients who trust your site book appointments. Practices with strong trust signals convert 2–3x more visitors.',
+    weight: 'High Impact'
+  },
+  'Social Proof & Engagement': {
+    importance: 'Reviews are the #1 factor patients use when choosing a doctor. 77% of patients use online reviews as their first step when finding a new physician. Low review counts or poor star ratings send patients directly to your competitor.',
+    benefit: 'A systematic review generation program builds a steady stream of 5-star reviews, improves your map pack ranking, and creates powerful social proof. Practices with 50+ recent reviews see 40–60% higher click-through rates from Google searches.',
+    weight: 'Critical'
+  },
+  'Lead Capture & Conversion': {
+    importance: 'Traffic without conversion is wasted marketing spend. Many medical practice websites have no online booking, no chatbot, and no click-to-call — forcing patients to call during office hours or leave. Every friction point loses you a potential patient.',
+    benefit: 'An optimized conversion system with online booking, 24/7 chatbot, and clear CTAs can capture 20–40% more leads from your existing traffic — without spending a dollar more on ads. This is the fastest way to increase appointments from your current website.',
+    weight: 'Revenue Critical'
+  },
+  'Technical SEO Health': {
+    importance: 'Technical issues like broken links, missing sitemaps, redirect chains, and indexing errors silently sabotage your rankings. These issues prevent Google from properly crawling and understanding your site — limiting how high you can rank regardless of your content.',
+    benefit: 'A technically clean site is the foundation everything else builds on. Fixing technical issues removes invisible ranking caps — allowing your content and local SEO efforts to reach their full potential. Most technical fixes are one-time with lasting benefits.',
+    weight: 'Foundation'
+  }
+};
+
+function getScoreVerdict(score, name) {
+  if (score <= 3) return `Critical — ${name} needs immediate attention`;
+  if (score <= 5) return `Below average — significant improvement needed`;
+  if (score <= 7) return `Developing — good foundation, room to grow`;
+  if (score <= 9) return `Strong — minor optimizations recommended`;
+  return `Excellent — maintain and monitor`;
+}
+
+function getScoreColor(score) {
+  if (score <= 4) return 'var(--red)';
+  if (score <= 6) return 'var(--amber)';
+  if (score <= 8) return 'var(--blue)';
+  return 'var(--green)';
+}
+
 function renderScoreGrid(report) {
-  const grid = document.getElementById('score-grid');
   const categories = normalizeCategories(report);
   
-  grid.innerHTML = categories.map((cat, i) => {
-    const meta = CATEGORY_META[cat.name] || { icon: '📊', idx: i };
-    const scoreClass = getScoreClass(cat.score);
-    const circumference = 176;
-    const pct = cat.score / 10;
-    const dashOffset = circumference - (circumference * pct);
-    
+  // === TOTAL SCORE BAR ===
+  const totalEl = document.getElementById('score-total-bar');
+  const scores = categories.map(c => Number(c.score) || 0);
+  const total = report.overallScore || Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10);
+  const grade = report.overallGrade || 'C';
+  const red = scores.filter(s=>s<=4).length;
+  const amber = scores.filter(s=>s>=5&&s<=6).length;
+  const blue = scores.filter(s=>s>=7&&s<=8).length;
+  const green = scores.filter(s=>s>=9).length;
+  const gradeColor = grade==='A'?'var(--green)':grade==='B'?'var(--blue)':grade==='C'?'var(--amber)':'var(--red)';
+  const totalVerdict = total>=90?'Outstanding digital presence — this practice dominates local search.':
+    total>=75?'Strong presence with clear opportunities to pull further ahead of competitors.':
+    total>=55?'Average performance — significant gaps that competitors can exploit.':
+    total>=40?'Below average — this practice is losing patients to competitors daily.':
+    'Critical — immediate action required across multiple areas.';
+
+  totalEl.innerHTML = `
+    <div class="stb-left">
+      <div class="stb-title">Overall Website Performance Score</div>
+      <div class="stb-breakdown">
+        ${red>0?`<span class="stb-pill stb-pill-red">🔴 ${red} Critical</span>`:''}
+        ${amber>0?`<span class="stb-pill stb-pill-amber">🟡 ${amber} Needs Work</span>`:''}
+        ${blue>0?`<span class="stb-pill stb-pill-blue">🔵 ${blue} Good</span>`:''}
+        ${green>0?`<span class="stb-pill stb-pill-green">🟢 ${green} Excellent</span>`:''}
+      </div>
+      <div class="stb-total-bar">
+        <div class="stb-total-fill" data-width="${total}%" style="width:0;background:${gradeColor}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--white-muted);margin-top:6px">
+        <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+      </div>
+      <div style="font-size:0.85rem;color:var(--white-dim);margin-top:12px;line-height:1.6">${totalVerdict}</div>
+    </div>
+    <div class="stb-right">
+      <div class="stb-score-big" style="color:${gradeColor}">${total}</div>
+      <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:${gradeColor}">${grade}</div>
+      <div class="stb-score-label">out of 100</div>
+      <div class="stb-verdict">${scores.length} categories · ${scores.filter(s=>s<=6).length} need attention</div>
+    </div>
+  `;
+
+  // === SUMMARY TABLE ===
+  const tableEl = document.getElementById('score-summary-table');
+  tableEl.innerHTML = `
+    <div class="score-summary-header">
+      <div>Category</div>
+      <div style="text-align:center">Score</div>
+      <div>Progress</div>
+      <div>Status</div>
+    </div>
+    ${categories.map((cat, i) => {
+      const meta = CATEGORY_META[cat.name] || { icon: '📊' };
+      const sc = Number(cat.score) || 0;
+      const color = getScoreColor(sc);
+      const verdict = getScoreVerdict(sc, cat.name);
+      return `
+        <div class="score-summary-row" onclick="toggleCatDetail(${i})" id="ssr-${i}">
+          <div class="ssr-name">
+            <span class="ssr-icon">${meta.icon}</span>
+            <span>${cat.name}</span>
+          </div>
+          <div class="ssr-score" style="color:${color};text-align:center">${sc}<span style="font-size:0.7rem;color:var(--white-muted)">/10</span></div>
+          <div class="ssr-bar-wrap">
+            <div class="ssr-bar">
+              <div class="ssr-bar-fill" data-width="${sc*10}%" style="width:0;background:${color}"></div>
+            </div>
+          </div>
+          <div class="ssr-status" style="color:${color}">${verdict.split('—')[0].trim()}</div>
+        </div>
+      `;
+    }).join('')}
+    <div style="display:grid;grid-template-columns:2fr 80px 120px 1fr;padding:16px 24px;background:var(--navy-4);border-top:2px solid var(--gold-border)">
+      <div style="font-weight:600;color:var(--white)">TOTAL SCORE</div>
+      <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:${gradeColor};text-align:center">${total}<span style="font-size:0.75rem;color:var(--white-muted)">/100</span></div>
+      <div style="display:flex;align-items:center;padding-right:16px">
+        <div style="flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden">
+          <div class="stb-total-fill-2" data-width="${total}%" style="width:0;height:100%;border-radius:4px;background:${gradeColor};transition:width 2s cubic-bezier(0.4,0,0.2,1)"></div>
+        </div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:${gradeColor}">Grade: ${grade}</div>
+    </div>
+  `;
+
+  // === DETAIL PANELS ===
+  const panelsEl = document.getElementById('score-detail-panels');
+  panelsEl.innerHTML = categories.map((cat, i) => {
+    const sc = Number(cat.score) || 0;
+    const color = getScoreColor(sc);
+    const meta = CATEGORY_META[cat.name] || { icon: '📊' };
+    const info = CATEGORY_IMPORTANCE[cat.name] || { importance: '', benefit: '', weight: '' };
+    const verdict = getScoreVerdict(sc, cat.name);
     return `
-      <div class="score-card ${scoreClass}" data-idx="${i}">
-        <div class="score-card-header">
-          <div class="gauge-wrap">
-            <svg class="gauge-svg" viewBox="0 0 64 64">
-              <circle class="gauge-bg" cx="32" cy="32" r="28"/>
-              <circle class="gauge-fill gauge-anim" cx="32" cy="32" r="28" 
-                stroke-dasharray="${circumference}" 
-                stroke-dashoffset="${circumference}"
-                data-target="${dashOffset}"
-                style="stroke-dashoffset:${circumference}"/>
-            </svg>
-            <div class="gauge-num">${cat.score}</div>
+      <div class="cat-detail-panel" id="cdp-${i}">
+        <div class="cdp-header">
+          <div class="cdp-score-circle" style="color:${color};border-color:${color};background:rgba(0,0,0,0.2)">
+            ${meta.icon}
           </div>
-          <div class="score-card-info">
-            <span class="score-cat-icon">${meta.icon}</span>
-            <div class="score-cat-name">${cat.name}</div>
-            <div class="score-verdict">${cat.explanation?.split('.')[0] || ''}</div>
+          <div style="flex:1">
+            <div class="cdp-title">${cat.name}</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <span style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:${color}">${sc}/10</span>
+              <span style="font-size:0.8rem;color:${color}">${verdict}</span>
+              <span class="service-tag" style="margin:0">⏱ ${cat.timeline||'3-6 months to 8/10'}</span>
+            </div>
           </div>
+          <button onclick="toggleCatDetail(${i})" style="background:none;border:none;color:var(--white-muted);font-size:1.2rem;cursor:pointer;padding:8px">✕</button>
         </div>
-        <div class="score-bar">
-          <div class="score-bar-fill" data-width="${pct * 100}%" style="width:0"></div>
-        </div>
-        <button class="score-expand-btn" onclick="toggleExpand(this)">
-          <span>View Details</span>
-          <span class="expand-arrow">▼</span>
-        </button>
-        <div class="score-details">
-          <div class="score-details-inner">
-            <p class="explanation-text">${cat.explanation || ''}</p>
-            <div class="quick-win-box">
-              <div class="qw-label">✓ 30-Day Quick Win</div>
-              <div class="qw-text">${cat.quickWin || ''}</div>
+        <div class="cdp-body">
+          <div class="cdp-importance-box">
+            <div class="cdp-section-title">⚠️ Why This Category Matters</div>
+            <div class="cdp-text">${info.importance}</div>
+          </div>
+          <div class="cdp-benefit-box">
+            <div class="cdp-section-title">📈 Benefits of Scoring 8–10</div>
+            <div class="cdp-text">${info.benefit}</div>
+          </div>
+          <div class="cdp-full-row">
+            <div class="cdp-section-title" style="margin-bottom:8px">📋 Current Assessment</div>
+            <div class="cdp-text" style="margin-bottom:16px">${cat.explanation||''}</div>
+            <div class="cdp-quickwin">
+              <div class="cdp-quickwin-label">✓ 30-Day Quick Win</div>
+              <div class="cdp-text">${cat.quickWin||''}</div>
             </div>
-            <div class="timeline-badge">⏱ Results Timeline: ${cat.timeline || '3-6 months'}</div>
-            <div class="action-items">
-              <div class="ai-label">Action Items</div>
-              ${(cat.actionItems || []).map((item, n) => `
-                <div class="action-item">
-                  <span class="action-num">${n+1}</span>
-                  <span>${item}</span>
-                </div>
-              `).join('')}
-            </div>
-            <div><span class="service-tag">🏢 ${cat.agencyService || 'Monthly Marketing Retainer'}</span></div>
-            <div class="impact-line">📈 ${cat.businessOutcome || ''}</div>
-            <div class="value-line">💰 ${cat.monthlyValue || ''}</div>
+          </div>
+          <div class="cdp-actions cdp-full-row">
+            <div class="cdp-section-title" style="margin-bottom:10px">🎯 Action Items to Improve This Score</div>
+            ${(cat.actionItems||[]).map((item,n)=>`
+              <div class="action-item" style="margin-bottom:10px">
+                <span class="action-num">${n+1}</span>
+                <span class="cdp-text">${item}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div>
+            <div class="cdp-section-title">🏢 Recommended Service</div>
+            <div><span class="service-tag">${cat.agencyService||'Monthly Marketing Retainer'}</span></div>
+          </div>
+          <div>
+            <div class="cdp-section-title">💰 Business Impact</div>
+            <div class="impact-line" style="margin-bottom:6px">📈 ${cat.businessOutcome||''}</div>
+            <div class="value-line">💰 ${cat.monthlyValue||''}</div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function toggleCatDetail(idx) {
+  const panel = document.getElementById(`cdp-${idx}`);
+  const row = document.getElementById(`ssr-${idx}`);
+  const isOpen = panel.classList.contains('open');
+  // Close all panels first
+  document.querySelectorAll('.cat-detail-panel').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.score-summary-row').forEach(r => r.classList.remove('active'));
+  if (!isOpen) {
+    panel.classList.add('open');
+    row.classList.add('active');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function toggleExpand(btn) {
@@ -1879,6 +2179,19 @@ function toggleExpand(btn) {
 }
 
 function animateGauges() {
+  // Animate summary table bars
+  document.querySelectorAll('.ssr-bar-fill').forEach(el => {
+    const w = el.getAttribute('data-width');
+    el.style.transition = 'width 1.5s cubic-bezier(0.4,0,0.2,1)';
+    el.style.width = w;
+  });
+  // Animate total score bar
+  document.querySelectorAll('.stb-total-fill, .stb-total-fill-2').forEach(el => {
+    const w = el.getAttribute('data-width');
+    el.style.transition = 'width 2s cubic-bezier(0.4,0,0.2,1)';
+    el.style.width = w;
+  });
+  // Legacy gauge/bar support
   document.querySelectorAll('.gauge-anim').forEach(el => {
     const target = parseFloat(el.getAttribute('data-target'));
     el.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)';
