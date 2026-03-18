@@ -1,4 +1,4 @@
- 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -586,6 +586,246 @@ body::before {
 @media (max-width: 768px) { .score-grid { grid-template-columns: 1fr; } }
 @media (min-width: 1100px) { .score-grid { grid-template-columns: repeat(2, 1fr); } }
 
+/* ===== SCORE VISUAL GRID ===== */
+.cat-blocks-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+@media (max-width: 1100px) { .cat-blocks-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .cat-blocks-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.cat-block {
+  border-radius: 14px;
+  padding: 20px 16px 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+}
+.cat-block:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+.cat-block.active { transform: translateY(-3px); box-shadow: 0 0 0 3px white, 0 12px 32px rgba(0,0,0,0.4); }
+
+/* Score color backgrounds */
+.cb-score-1, .cb-score-2 { background: #c0392b; }
+.cb-score-3, .cb-score-4 { background: #e74c3c; }
+.cb-score-5 { background: #e67e22; }
+.cb-score-6 { background: #f39c12; }
+.cb-score-7 { background: #2980b9; }
+.cb-score-8 { background: #27ae60; }
+.cb-score-9, .cb-score-10 { background: #16a085; }
+
+.cb-icon { font-size: 1.4rem; margin-bottom: 8px; display: block; }
+.cb-score {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.cb-score span { font-size: 1rem; opacity: 0.7; }
+.cb-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+.cb-label {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 4px;
+}
+.cb-bracket {
+  position: absolute;
+  bottom: -14px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+}
+.cb-bracket-line {
+  width: 80%;
+  height: 12px;
+  border-left: 2px solid rgba(255,255,255,0.3);
+  border-right: 2px solid rgba(255,255,255,0.3);
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  border-radius: 0 0 4px 4px;
+}
+
+/* Score legend strip */
+.score-legend {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.score-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--white-dim);
+}
+.score-legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+}
+
+/* Total score band */
+.total-score-band {
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+.total-score-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), transparent);
+}
+.tsb-grade-circle {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  border: 4px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.tsb-grade { font-family: var(--font-display); font-size: 3rem; font-weight: 700; line-height: 1; }
+.tsb-grade-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; }
+.tsb-info { flex: 1; position: relative; z-index: 1; }
+.tsb-score-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.tsb-score-num { font-family: var(--font-display); font-size: 2.4rem; font-weight: 700; color: var(--gold); }
+.tsb-score-denom { font-size: 1rem; color: var(--white-muted); }
+.tsb-verdict { font-size: 0.9rem; color: var(--white-dim); line-height: 1.6; max-width: 480px; }
+.tsb-bar-row { margin-top: 12px; }
+.tsb-bar { height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden; max-width: 400px; }
+.tsb-bar-fill { height: 100%; border-radius: 5px; transition: width 2s cubic-bezier(0.4,0,0.2,1); width: 0; }
+.tsb-cats { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+.tsb-cat-stat { font-size: 0.75rem; }
+
+/* Category detail drawer */
+.cat-detail-drawer {
+  background: var(--navy-3);
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  display: none;
+  animation: slideUp 0.25s ease;
+}
+.cat-detail-drawer.open { display: block; }
+
+.cdd-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+}
+.cdd-color-band {
+  width: 8px;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+.cdd-header-inner {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.cdd-score-badge {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  min-width: 56px;
+  text-align: center;
+}
+.cdd-title-wrap { flex: 1; }
+.cdd-cat-name { font-family: var(--font-display); font-size: 1.3rem; color: var(--white); margin-bottom: 2px; }
+.cdd-verdict { font-size: 0.8rem; }
+.cdd-close {
+  background: none; border: none;
+  color: var(--white-muted); font-size: 1.1rem;
+  cursor: pointer; padding: 8px 16px;
+  transition: color 0.2s;
+}
+.cdd-close:hover { color: var(--white); }
+
+.cdd-body {
+  padding: 0 24px 24px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) { .cdd-body { grid-template-columns: 1fr; } }
+
+.cdd-box {
+  border-radius: 10px;
+  padding: 16px;
+}
+.cdd-box-gold {
+  background: rgba(201,168,76,0.07);
+  border: 1px solid rgba(201,168,76,0.25);
+}
+.cdd-box-green {
+  background: rgba(16,185,129,0.07);
+  border: 1px solid rgba(16,185,129,0.2);
+}
+.cdd-box-blue {
+  background: rgba(59,130,246,0.07);
+  border: 1px solid rgba(59,130,246,0.2);
+}
+.cdd-box-full { grid-column: 1 / -1; }
+.cdd-box-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.cdd-box-label-gold { color: var(--gold); }
+.cdd-box-label-green { color: var(--green); }
+.cdd-box-label-blue { color: var(--blue); }
+.cdd-box-label-white { color: var(--white-muted); }
+.cdd-box-text { font-size: 0.85rem; color: var(--white-dim); line-height: 1.7; }
+
+.cdd-action-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--white-dim);
+  line-height: 1.5;
+}
+.cdd-action-num {
+  background: rgba(201,168,76,0.15);
+  color: var(--gold);
+  min-width: 22px; height: 22px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+  flex-shrink: 0;
+}
+
 /* Score Summary Table */
 .score-summary-table {
   width: 100%;
@@ -641,12 +881,7 @@ body::before {
 .stb-left {}
 .stb-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--gold); margin-bottom: 8px; }
 .stb-breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-.stb-pill {
-  font-size: 0.7rem;
-  padding: 3px 10px;
-  border-radius: 100px;
-  font-weight: 600;
-}
+.stb-pill { font-size: 0.7rem; padding: 3px 10px; border-radius: 100px; font-weight: 600; }
 .stb-pill-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
 .stb-pill-amber { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
 .stb-pill-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
@@ -658,61 +893,9 @@ body::before {
 .stb-score-label { font-size: 0.75rem; color: var(--white-muted); margin-top: 4px; }
 .stb-verdict { font-size: 0.8rem; color: var(--white-dim); margin-top: 8px; max-width: 200px; text-align: center; }
 
-/* Expanded detail panel */
-.cat-detail-panel {
-  background: var(--navy-4);
-  border: 1px solid var(--gold-border);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  display: none;
-}
+/* Expanded detail panel - legacy kept for compat */
+.cat-detail-panel { display: none; }
 .cat-detail-panel.open { display: block; }
-.cdp-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  background: var(--navy-3);
-}
-.cdp-score-circle {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  border: 3px solid;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.cdp-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--white); }
-.cdp-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-@media (max-width: 700px) { .cdp-body { grid-template-columns: 1fr; } }
-.cdp-section-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
-.cdp-text { font-size: 0.85rem; color: var(--white-dim); line-height: 1.7; }
-.cdp-importance-box {
-  background: rgba(201,168,76,0.06);
-  border: 1px solid var(--gold-border);
-  border-radius: 8px;
-  padding: 14px;
-}
-.cdp-benefit-box {
-  background: rgba(16,185,129,0.06);
-  border: 1px solid rgba(16,185,129,0.2);
-  border-radius: 8px;
-  padding: 14px;
-}
-.cdp-full-row { grid-column: 1 / -1; }
-.cdp-actions { grid-column: 1 / -1; }
-.cdp-quickwin {
-  background: rgba(201,168,76,0.08);
-  border: 1px solid var(--gold-border);
-  border-radius: 8px;
-  padding: 14px;
-  margin-bottom: 12px;
-}
-.cdp-quickwin-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 6px; font-weight: 600; }
 
 .score-card {
   background: var(--navy-3);
@@ -1332,14 +1515,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="section" id="section-scores">
       <div class="section-header">
         <h2 class="section-title">Performance Scores</h2>
-        <span class="section-subtitle">10 categories · scored 1–10 each</span>
+        <span class="section-subtitle">10 categories · click any block to see full breakdown</span>
       </div>
-      <!-- Total Score Bar -->
-      <div class="score-total-bar" id="score-total-bar"></div>
-      <!-- Summary Table -->
-      <div class="score-summary-table" id="score-summary-table"></div>
-      <!-- Expanded Detail Panels -->
-      <div id="score-detail-panels"></div>
+      <!-- Color Block Grid -->
+      <div class="score-legend" id="score-legend"></div>
+      <div class="cat-blocks-grid" id="cat-blocks-grid"></div>
+      <!-- Detail Drawer (shows below grid when block clicked) -->
+      <div id="cat-detail-drawer" class="cat-detail-drawer"></div>
+      <!-- Total Score Band -->
+      <div class="total-score-band" id="total-score-band"></div>
     </div>
 
     <!-- Section 2: Priority Action Panel -->
@@ -2007,169 +2191,236 @@ function getScoreColor(score) {
   return 'var(--green)';
 }
 
+function getCbClass(score) {
+  const s = Number(score);
+  if (s <= 2) return 'cb-score-1';
+  if (s <= 4) return 'cb-score-3';
+  if (s === 5) return 'cb-score-5';
+  if (s === 6) return 'cb-score-6';
+  if (s === 7) return 'cb-score-7';
+  if (s === 8) return 'cb-score-8';
+  return 'cb-score-9';
+}
+
+function getScoreLabel(score) {
+  if (score <= 2) return 'Critical';
+  if (score <= 4) return 'Poor';
+  if (score <= 6) return 'Moderate';
+  if (score <= 8) return 'Good';
+  return 'Excellent';
+}
+
+function getScoreColor(score) {
+  if (score <= 4) return 'var(--red)';
+  if (score <= 6) return 'var(--amber)';
+  if (score <= 8) return 'var(--blue)';
+  return 'var(--green)';
+}
+
+function getScoreHex(score) {
+  if (score <= 2) return '#c0392b';
+  if (score <= 4) return '#e74c3c';
+  if (score === 5) return '#e67e22';
+  if (score === 6) return '#f39c12';
+  if (score === 7) return '#2980b9';
+  if (score === 8) return '#27ae60';
+  return '#16a085';
+}
+
+function getScoreVerdict(score) {
+  if (score <= 3) return 'Critical — needs immediate attention';
+  if (score <= 5) return 'Below average — significant work needed';
+  if (score <= 7) return 'Developing — room to grow';
+  if (score <= 9) return 'Strong — minor improvements';
+  return 'Excellent — maintain & monitor';
+}
+
+let _currentOpenBlock = -1;
+
 function renderScoreGrid(report) {
   const categories = normalizeCategories(report);
-  
-  // === TOTAL SCORE BAR ===
-  const totalEl = document.getElementById('score-total-bar');
   const scores = categories.map(c => Number(c.score) || 0);
   const total = report.overallScore || Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10);
   const grade = report.overallGrade || 'C';
-  const red = scores.filter(s=>s<=4).length;
-  const amber = scores.filter(s=>s>=5&&s<=6).length;
-  const blue = scores.filter(s=>s>=7&&s<=8).length;
-  const green = scores.filter(s=>s>=9).length;
-  const gradeColor = grade==='A'?'var(--green)':grade==='B'?'var(--blue)':grade==='C'?'var(--amber)':'var(--red)';
-  const totalVerdict = total>=90?'Outstanding digital presence — this practice dominates local search.':
-    total>=75?'Strong presence with clear opportunities to pull further ahead of competitors.':
-    total>=55?'Average performance — significant gaps that competitors can exploit.':
-    total>=40?'Below average — this practice is losing patients to competitors daily.':
-    'Critical — immediate action required across multiple areas.';
 
-  totalEl.innerHTML = `
-    <div class="stb-left">
-      <div class="stb-title">Overall Website Performance Score</div>
-      <div class="stb-breakdown">
-        ${red>0?`<span class="stb-pill stb-pill-red">🔴 ${red} Critical</span>`:''}
-        ${amber>0?`<span class="stb-pill stb-pill-amber">🟡 ${amber} Needs Work</span>`:''}
-        ${blue>0?`<span class="stb-pill stb-pill-blue">🔵 ${blue} Good</span>`:''}
-        ${green>0?`<span class="stb-pill stb-pill-green">🟢 ${green} Excellent</span>`:''}
-      </div>
-      <div class="stb-total-bar">
-        <div class="stb-total-fill" data-width="${total}%" style="width:0;background:${gradeColor}"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--white-muted);margin-top:6px">
-        <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
-      </div>
-      <div style="font-size:0.85rem;color:var(--white-dim);margin-top:12px;line-height:1.6">${totalVerdict}</div>
-    </div>
-    <div class="stb-right">
-      <div class="stb-score-big" style="color:${gradeColor}">${total}</div>
-      <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:${gradeColor}">${grade}</div>
-      <div class="stb-score-label">out of 100</div>
-      <div class="stb-verdict">${scores.length} categories · ${scores.filter(s=>s<=6).length} need attention</div>
-    </div>
+  // === LEGEND ===
+  const legendEl = document.getElementById('score-legend');
+  legendEl.innerHTML = `
+    <span style="font-size:0.72rem;color:var(--white-muted);margin-right:4px">Score key:</span>
+    <span class="score-legend-item"><span class="score-legend-dot" style="background:#e74c3c"></span>1–4 Poor</span>
+    <span class="score-legend-item"><span class="score-legend-dot" style="background:#f39c12"></span>5–6 Moderate</span>
+    <span class="score-legend-item"><span class="score-legend-dot" style="background:#2980b9"></span>7–8 Good</span>
+    <span class="score-legend-item"><span class="score-legend-dot" style="background:#16a085"></span>9–10 Excellent</span>
+    <span style="font-size:0.72rem;color:var(--white-muted);margin-left:8px">· Click any block for full breakdown</span>
   `;
 
-  // === SUMMARY TABLE ===
-  const tableEl = document.getElementById('score-summary-table');
-  tableEl.innerHTML = `
-    <div class="score-summary-header">
-      <div>Category</div>
-      <div style="text-align:center">Score</div>
-      <div>Progress</div>
-      <div>Status</div>
-    </div>
-    ${categories.map((cat, i) => {
-      const meta = CATEGORY_META[cat.name] || { icon: '📊' };
-      const sc = Number(cat.score) || 0;
-      const color = getScoreColor(sc);
-      const verdict = getScoreVerdict(sc, cat.name);
-      return `
-        <div class="score-summary-row" onclick="toggleCatDetail(${i})" id="ssr-${i}">
-          <div class="ssr-name">
-            <span class="ssr-icon">${meta.icon}</span>
-            <span>${cat.name}</span>
-          </div>
-          <div class="ssr-score" style="color:${color};text-align:center">${sc}<span style="font-size:0.7rem;color:var(--white-muted)">/10</span></div>
-          <div class="ssr-bar-wrap">
-            <div class="ssr-bar">
-              <div class="ssr-bar-fill" data-width="${sc*10}%" style="width:0;background:${color}"></div>
-            </div>
-          </div>
-          <div class="ssr-status" style="color:${color}">${verdict.split('—')[0].trim()}</div>
-        </div>
-      `;
-    }).join('')}
-    <div style="display:grid;grid-template-columns:2fr 80px 120px 1fr;padding:16px 24px;background:var(--navy-4);border-top:2px solid var(--gold-border)">
-      <div style="font-weight:600;color:var(--white)">TOTAL SCORE</div>
-      <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:${gradeColor};text-align:center">${total}<span style="font-size:0.75rem;color:var(--white-muted)">/100</span></div>
-      <div style="display:flex;align-items:center;padding-right:16px">
-        <div style="flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden">
-          <div class="stb-total-fill-2" data-width="${total}%" style="width:0;height:100%;border-radius:4px;background:${gradeColor};transition:width 2s cubic-bezier(0.4,0,0.2,1)"></div>
-        </div>
-      </div>
-      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:${gradeColor}">Grade: ${grade}</div>
-    </div>
-  `;
-
-  // === DETAIL PANELS ===
-  const panelsEl = document.getElementById('score-detail-panels');
-  panelsEl.innerHTML = categories.map((cat, i) => {
+  // === COLOR BLOCKS GRID ===
+  const gridEl = document.getElementById('cat-blocks-grid');
+  gridEl.innerHTML = categories.map((cat, i) => {
     const sc = Number(cat.score) || 0;
-    const color = getScoreColor(sc);
+    const cbClass = getCbClass(sc);
+    const label = getScoreLabel(sc);
     const meta = CATEGORY_META[cat.name] || { icon: '📊' };
-    const info = CATEGORY_IMPORTANCE[cat.name] || { importance: '', benefit: '', weight: '' };
-    const verdict = getScoreVerdict(sc, cat.name);
+    // Short name for small block
+    const shortName = cat.name
+      .replace('& Core Web Vitals','')
+      .replace('& Google Business Profile','')
+      .replace('& Conversion','')
+      .replace('& Engagement','')
+      .replace('& Freshness','')
+      .replace('& Authority Signals','')
+      .trim();
     return `
-      <div class="cat-detail-panel" id="cdp-${i}">
-        <div class="cdp-header">
-          <div class="cdp-score-circle" style="color:${color};border-color:${color};background:rgba(0,0,0,0.2)">
-            ${meta.icon}
-          </div>
-          <div style="flex:1">
-            <div class="cdp-title">${cat.name}</div>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-              <span style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:${color}">${sc}/10</span>
-              <span style="font-size:0.8rem;color:${color}">${verdict}</span>
-              <span class="service-tag" style="margin:0">⏱ ${cat.timeline||'3-6 months to 8/10'}</span>
-            </div>
-          </div>
-          <button onclick="toggleCatDetail(${i})" style="background:none;border:none;color:var(--white-muted);font-size:1.2rem;cursor:pointer;padding:8px">✕</button>
+      <div class="cat-block ${cbClass}" id="cb-${i}" onclick="toggleBlockDetail(${i})" title="${cat.name}">
+        <div>
+          <div class="cb-icon">${meta.icon}</div>
+          <div class="cb-score">${sc}<span>/10</span></div>
         </div>
-        <div class="cdp-body">
-          <div class="cdp-importance-box">
-            <div class="cdp-section-title">⚠️ Why This Category Matters</div>
-            <div class="cdp-text">${info.importance}</div>
-          </div>
-          <div class="cdp-benefit-box">
-            <div class="cdp-section-title">📈 Benefits of Scoring 8–10</div>
-            <div class="cdp-text">${info.benefit}</div>
-          </div>
-          <div class="cdp-full-row">
-            <div class="cdp-section-title" style="margin-bottom:8px">📋 Current Assessment</div>
-            <div class="cdp-text" style="margin-bottom:16px">${cat.explanation||''}</div>
-            <div class="cdp-quickwin">
-              <div class="cdp-quickwin-label">✓ 30-Day Quick Win</div>
-              <div class="cdp-text">${cat.quickWin||''}</div>
-            </div>
-          </div>
-          <div class="cdp-actions cdp-full-row">
-            <div class="cdp-section-title" style="margin-bottom:10px">🎯 Action Items to Improve This Score</div>
-            ${(cat.actionItems||[]).map((item,n)=>`
-              <div class="action-item" style="margin-bottom:10px">
-                <span class="action-num">${n+1}</span>
-                <span class="cdp-text">${item}</span>
-              </div>
-            `).join('')}
-          </div>
-          <div>
-            <div class="cdp-section-title">🏢 Recommended Service</div>
-            <div><span class="service-tag">${cat.agencyService||'Monthly Marketing Retainer'}</span></div>
-          </div>
-          <div>
-            <div class="cdp-section-title">💰 Business Impact</div>
-            <div class="impact-line" style="margin-bottom:6px">📈 ${cat.businessOutcome||''}</div>
-            <div class="value-line">💰 ${cat.monthlyValue||''}</div>
-          </div>
+        <div>
+          <div class="cb-name">${shortName}</div>
+          <div class="cb-label">${label}</div>
         </div>
       </div>
     `;
   }).join('');
+
+  // === DRAWER (pre-render all, show active) ===
+  const drawerEl = document.getElementById('cat-detail-drawer');
+  drawerEl._categories = categories; // store for later
+
+  // === TOTAL SCORE BAND ===
+  const bandEl = document.getElementById('total-score-band');
+  const gradeColor = grade==='A'?'#16a085':grade==='B'?'#2980b9':grade==='C'?'#f39c12':'#e74c3c';
+  const red = scores.filter(s=>s<=4).length;
+  const amber = scores.filter(s=>s===5||s===6).length;
+  const good = scores.filter(s=>s===7||s===8).length;
+  const excellent = scores.filter(s=>s>=9).length;
+  const verdict = total>=90?'Outstanding — this practice dominates local search and leads their market.':
+    total>=75?'Strong presence with clear opportunities to pull further ahead of competitors.':
+    total>=55?'Average — significant gaps that competitors are already exploiting.':
+    total>=40?'Below average — this practice is losing patients to competitors every single day.':
+    'Critical — immediate multi-area action required to stop patient leakage.';
+
+  bandEl.style.background = `linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1))`;
+  bandEl.style.border = `1px solid ${gradeColor}44`;
+  bandEl.innerHTML = `
+    <div class="tsb-grade-circle" style="border-color:${gradeColor}">
+      <div class="tsb-grade" style="color:${gradeColor}">${grade}</div>
+      <div class="tsb-grade-label">Grade</div>
+    </div>
+    <div class="tsb-info">
+      <div class="tsb-score-row">
+        <span class="tsb-score-num" style="color:${gradeColor}">${total}</span>
+        <span class="tsb-score-denom">/ 100</span>
+        <span style="font-size:0.75rem;color:var(--white-muted);margin-left:4px">Overall Score</span>
+      </div>
+      <div class="tsb-verdict">${verdict}</div>
+      <div class="tsb-bar-row">
+        <div class="tsb-bar">
+          <div class="tsb-bar-fill" data-width="${total}%" style="width:0;background:${gradeColor}"></div>
+        </div>
+      </div>
+      <div class="tsb-cats">
+        ${red>0?`<span class="tsb-cat-stat" style="color:#e74c3c">🔴 ${red} Critical</span>`:''}
+        ${amber>0?`<span class="tsb-cat-stat" style="color:#f39c12">🟡 ${amber} Moderate</span>`:''}
+        ${good>0?`<span class="tsb-cat-stat" style="color:#2980b9">🔵 ${good} Good</span>`:''}
+        ${excellent>0?`<span class="tsb-cat-stat" style="color:#16a085">🟢 ${excellent} Excellent</span>`:''}
+        <span class="tsb-cat-stat" style="color:var(--white-muted)">· ${categories.length} categories scored</span>
+      </div>
+    </div>
+  `;
 }
 
-function toggleCatDetail(idx) {
-  const panel = document.getElementById(`cdp-${idx}`);
-  const row = document.getElementById(`ssr-${idx}`);
-  const isOpen = panel.classList.contains('open');
-  // Close all panels first
-  document.querySelectorAll('.cat-detail-panel').forEach(p => p.classList.remove('open'));
-  document.querySelectorAll('.score-summary-row').forEach(r => r.classList.remove('active'));
-  if (!isOpen) {
-    panel.classList.add('open');
-    row.classList.add('active');
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function toggleBlockDetail(idx) {
+  const drawerEl = document.getElementById('cat-detail-drawer');
+  const categories = drawerEl._categories;
+  const blocks = document.querySelectorAll('.cat-block');
+
+  if (_currentOpenBlock === idx) {
+    // Close
+    drawerEl.classList.remove('open');
+    blocks[idx].classList.remove('active');
+    _currentOpenBlock = -1;
+    return;
   }
+
+  // Open new
+  _currentOpenBlock = idx;
+  blocks.forEach((b,i) => b.classList.toggle('active', i===idx));
+
+  const cat = categories[idx];
+  const sc = Number(cat.score) || 0;
+  const hex = getScoreHex(sc);
+  const meta = CATEGORY_META[cat.name] || { icon: '📊' };
+  const info = CATEGORY_IMPORTANCE[cat.name] || { importance:'', benefit:'' };
+  const verdict = getScoreVerdict(sc);
+
+  drawerEl.innerHTML = `
+    <div class="cdd-header">
+      <div class="cdd-color-band" style="background:${hex}"></div>
+      <div class="cdd-header-inner">
+        <div style="font-size:1.6rem">${meta.icon}</div>
+        <div class="cdd-title-wrap">
+          <div class="cdd-cat-name">${cat.name}</div>
+          <div class="cdd-verdict" style="color:${hex}">${verdict}</div>
+        </div>
+        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;color:${hex};margin-right:8px">${sc}<span style="font-size:1rem;opacity:0.6">/10</span></div>
+        <button class="cdd-close" onclick="toggleBlockDetail(${idx})">✕</button>
+      </div>
+    </div>
+    <div class="cdd-body">
+
+      <div class="cdd-box cdd-box-gold">
+        <div class="cdd-box-label cdd-box-label-gold">⚠️ Why This Category Matters</div>
+        <div class="cdd-box-text">${info.importance}</div>
+      </div>
+
+      <div class="cdd-box cdd-box-green">
+        <div class="cdd-box-label cdd-box-label-green">🚀 Benefits of Scoring 8–10</div>
+        <div class="cdd-box-text">${info.benefit}</div>
+      </div>
+
+      <div class="cdd-box cdd-box-full" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px">
+        <div class="cdd-box-label cdd-box-label-white">📋 Current Assessment — What We Found</div>
+        <div class="cdd-box-text">${cat.explanation||'No explanation available.'}</div>
+      </div>
+
+      <div class="cdd-box cdd-box-gold cdd-box-full">
+        <div class="cdd-box-label cdd-box-label-gold">✓ 30-Day Quick Win</div>
+        <div class="cdd-box-text">${cat.quickWin||''}</div>
+      </div>
+
+      <div class="cdd-box cdd-box-blue cdd-box-full">
+        <div class="cdd-box-label cdd-box-label-blue">🎯 3 Action Items to Raise This Score</div>
+        ${(cat.actionItems||[]).map((item,n)=>`
+          <div class="cdd-action-item">
+            <span class="cdd-action-num">${n+1}</span>
+            <span class="cdd-box-text">${item}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="cdd-box cdd-box-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;background:transparent;border:none;padding:0">
+        <div style="background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:14px">
+          <div class="cdd-box-label cdd-box-label-gold">🏢 Recommended Service</div>
+          <div style="font-size:0.85rem;color:var(--white)">${cat.agencyService||'Monthly Marketing Retainer'}</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px">
+          <div class="cdd-box-label cdd-box-label-green">📈 Business Outcome</div>
+          <div style="font-size:0.85rem;color:var(--white-dim)">${cat.businessOutcome||''}</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px">
+          <div class="cdd-box-label" style="color:var(--amber)">⏱ Timeline to Score 8/10</div>
+          <div style="font-size:0.85rem;color:var(--white-dim)">${cat.timeline||'3-6 months'}</div>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  drawerEl.classList.add('open');
+  // Scroll drawer into view smoothly
+  setTimeout(() => drawerEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
 }
 
 function toggleExpand(btn) {
@@ -2179,31 +2430,20 @@ function toggleExpand(btn) {
 }
 
 function animateGauges() {
-  // Animate summary table bars
-  document.querySelectorAll('.ssr-bar-fill').forEach(el => {
-    const w = el.getAttribute('data-width');
-    el.style.transition = 'width 1.5s cubic-bezier(0.4,0,0.2,1)';
-    el.style.width = w;
-  });
-  // Animate total score bar
-  document.querySelectorAll('.stb-total-fill, .stb-total-fill-2').forEach(el => {
+  // Animate total score band bar
+  document.querySelectorAll('.tsb-bar-fill').forEach(el => {
     const w = el.getAttribute('data-width');
     el.style.transition = 'width 2s cubic-bezier(0.4,0,0.2,1)';
     el.style.width = w;
   });
-  // Legacy gauge/bar support
-  document.querySelectorAll('.gauge-anim').forEach(el => {
-    const target = parseFloat(el.getAttribute('data-target'));
-    el.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)';
-    el.style.strokeDashoffset = target;
-  });
-  document.querySelectorAll('.score-bar-fill').forEach(el => {
-    const w = el.getAttribute('data-width');
-    el.style.transition = 'width 1.5s cubic-bezier(0.4,0,0.2,1)';
-    el.style.width = w;
-  });
+  // Animate ROI bars
   document.querySelectorAll('.roi-proj-fill').forEach(el => {
     el.style.animationPlayState = 'running';
+  });
+  // Legacy support
+  document.querySelectorAll('.stb-total-fill,.stb-total-fill-2,.ssr-bar-fill,.score-bar-fill').forEach(el => {
+    const w = el.getAttribute('data-width');
+    if (w) { el.style.transition = 'width 1.5s ease'; el.style.width = w; }
   });
 }
 
