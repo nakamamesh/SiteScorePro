@@ -869,15 +869,43 @@ function normalizeReport(r) {
         .map(function(kv) { return Object.assign({ name: kv[0] }, kv[1]); });
     }
   }
-  if (!r.overallScore) {
-    var scores = r.categories.map(function(c) { return Number(c.score) || 5; });
-    r.overallScore = Math.round(scores.reduce(function(a,b){return a+b;},0) / scores.length * 10);
+  // ALWAYS recalculate score from categories — never trust Claude's overallScore
+  // Each category is scored 1-10. Sum all 10 = max 100. That IS the score out of 100.
+  if (r.categories && r.categories.length > 0) {
+    var scores = r.categories.map(function(c) { return Math.min(10, Math.max(1, Number(c.score) || 5)); });
+    r.overallScore = scores.reduce(function(a,b){return a+b;}, 0); // sum of all 10 scores = out of 100
+  } else if (!r.overallScore) {
+    r.overallScore = 50;
   }
-  if (!r.overallGrade) {
-    var s = r.overallScore;
-    r.overallGrade = s >= 90 ? 'A' : s >= 75 ? 'B' : s >= 55 ? 'C' : s >= 40 ? 'D' : 'F';
-  }
+  r.overallGrade = calcGrade(r.overallScore);
   return r;
+}
+
+// US standard grading scale (most common public high school / college scale)
+function calcGrade(s) {
+  if (s >= 97) return 'A+';
+  if (s >= 93) return 'A';
+  if (s >= 90) return 'A-';
+  if (s >= 87) return 'B+';
+  if (s >= 83) return 'B';
+  if (s >= 80) return 'B-';
+  if (s >= 77) return 'C+';
+  if (s >= 73) return 'C';
+  if (s >= 70) return 'C-';
+  if (s >= 67) return 'D+';
+  if (s >= 63) return 'D';
+  if (s >= 60) return 'D-';
+  return 'F';
+}
+
+function gradeColor(g) {
+  if (!g) return '#e74c3c';
+  var l = g.charAt(0);
+  if (l === 'A') return '#16a085';
+  if (l === 'B') return '#2980b9';
+  if (l === 'C') return '#d4a017';
+  if (l === 'D') return '#e67e22';
+  return '#e74c3c';
 }
 
 // ============================================================
@@ -1007,7 +1035,9 @@ function renderResults(report, url) {
 
   var gb = document.getElementById('r-grade');
   gb.textContent = grade;
-  gb.className = 'grade-badge gb' + grade;
+  // Use first letter for CSS class, full grade for display
+  gb.className = 'grade-badge gb' + grade.charAt(0);
+  gb.style.fontSize = grade.length > 1 ? '1.9rem' : '2.8rem';
 
   renderScores(report);
   renderPriority(report);
@@ -1030,7 +1060,7 @@ function renderScores(report) {
   var scores = cats.map(function(c) { return Number(c.score) || 0; });
   var total = report.overallScore || 0;
   var grade = report.overallGrade || 'C';
-  var gradeHex = grade === 'A' ? '#16a085' : grade === 'B' ? '#2980b9' : grade === 'C' ? '#d4a017' : '#e74c3c';
+  var gradeHex = gradeColor(grade);
 
   // Legend
   document.getElementById('score-legend').innerHTML =
@@ -1060,16 +1090,22 @@ function renderScores(report) {
   var mod = scores.filter(function(s){return s===5||s===6;}).length;
   var good = scores.filter(function(s){return s===7||s===8;}).length;
   var exc = scores.filter(function(s){return s>=9;}).length;
-  var verdict = total >= 90 ? 'Outstanding digital presence — this practice leads their local market.' :
-    total >= 75 ? 'Strong presence with clear opportunities to pull further ahead of competitors.' :
-    total >= 55 ? 'Average performance — significant gaps that competitors can exploit.' :
-    total >= 40 ? 'Below average — this practice is losing patients to competitors every day.' :
-    'Critical — immediate action required across multiple areas.';
+  var verdict = total >= 93 ? 'Outstanding — A-grade digital presence. This practice leads their local market.' :
+    total >= 90 ? 'Excellent — strong presence with minor opportunities to reach the top.' :
+    total >= 83 ? 'Very good — solid foundation with targeted improvements available.' :
+    total >= 80 ? 'Good — above average but meaningful gaps remain versus top competitors.' :
+    total >= 73 ? 'Satisfactory — meets minimum standards but losing ground to stronger competitors.' :
+    total >= 70 ? 'Below average — patients are choosing competitors with stronger digital presence.' :
+    total >= 60 ? 'Poor — significant gaps across multiple areas requiring urgent attention.' :
+    'Failing — immediate multi-area action required to stop patient leakage.';
 
+  var gradeDesc = {'A+':'Outstanding','A':'Excellent','A-':'Excellent','B+':'Very Good',
+    'B':'Good','B-':'Good','C+':'Satisfactory','C':'Satisfactory','C-':'Below Avg',
+    'D+':'Poor','D':'Poor','D-':'Poor','F':'Failing'};
   document.getElementById('total-band').innerHTML =
     '<div class="tb-grade" style="border-color:' + gradeHex + '">' +
-      '<div class="tb-grade-letter" style="color:' + gradeHex + '">' + grade + '</div>' +
-      '<div class="tb-grade-lbl">Grade</div></div>' +
+      '<div class="tb-grade-letter" style="color:' + gradeHex + ';font-size:' + (grade.length>1?'2rem':'3rem') + '">' + grade + '</div>' +
+      '<div class="tb-grade-lbl">' + (gradeDesc[grade]||'Grade') + '</div></div>' +
     '<div class="tb-info">' +
       '<div class="tb-scorerow"><span class="tb-num" style="color:' + gradeHex + '">' + total + '</span><span class="tb-denom">/ 100 Overall Score</span></div>' +
       '<div class="tb-verdict">' + verdict + '</div>' +
