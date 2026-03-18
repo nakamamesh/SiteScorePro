@@ -295,6 +295,40 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .svc-tag{display:inline-block;background:rgba(201,168,76,.1);border:1px solid var(--goldb);color:var(--gold);font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:500}
 .tl-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);padding:3px 10px;border-radius:100px;font-size:.72rem;color:var(--blue)}
 
+/* CLV INTELLIGENCE CARD */
+.clv-card{background:linear-gradient(135deg,var(--navy3),rgba(201,168,76,.06));border:1px solid var(--goldb);border-radius:16px;padding:28px 32px;margin-bottom:32px;position:relative;overflow:hidden}
+.clv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#16a085,var(--gold),#2980b9)}
+.clv-top{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.clv-industry-badge{background:var(--goldd);border:1px solid var(--goldb);border-radius:10px;padding:12px 16px;flex-shrink:0;text-align:center;min-width:110px}
+.clv-ind-icon{font-size:1.8rem;display:block;margin-bottom:4px}
+.clv-ind-name{font-size:.68rem;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.clv-headline{flex:1}
+.clv-h1{font-family:var(--fd);font-size:1.3rem;color:var(--white);margin-bottom:4px}
+.clv-h2{font-size:.875rem;color:var(--wdim);line-height:1.6}
+.clv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.clv-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px}
+.clv-stat-lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--wmut);font-weight:600;margin-bottom:6px}
+.clv-stat-val{font-family:var(--fd);font-size:1.6rem;font-weight:700;color:var(--gold)}
+.clv-stat-sub{font-size:.72rem;color:var(--wmut);margin-top:2px}
+.clv-breakdown{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px}
+.clv-bk-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600;margin-bottom:12px}
+.clv-bk-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
+.clv-bk-row:last-child{border-bottom:none;font-weight:600;color:var(--gold)}
+.clv-bk-label{color:var(--wdim)}
+.clv-bk-val{color:var(--white);font-weight:500}
+.clv-geo-note{font-size:.78rem;color:var(--wmut);margin-top:12px;font-style:italic}
+
+/* CLV print styles */
+@media print{
+  .clv-card{background:#fdf9ee!important;border:1px solid #c9a84c!important;break-inside:avoid}
+  .clv-industry-badge{background:#fff8e8!important;border:1px solid #c9a84c!important}
+  .clv-ind-name{color:#a07030!important}
+  .clv-stat{background:#f5f5f5!important;border:1px solid #ddd!important}
+  .clv-stat-val{color:#a07030!important}
+  .clv-breakdown{background:#f9f9f9!important;border:1px solid #ddd!important}
+  .clv-bk-title{color:#a07030!important}
+}
+
 /* FOOTER CTA */
 .footer-cta{background:linear-gradient(135deg,var(--navy2),rgba(201,168,76,.05));border-top:1px solid var(--goldb);padding:48px 32px;text-align:center}
 .footer-cta h2{font-family:var(--fd);font-size:2rem;color:var(--gold);margin-bottom:12px}
@@ -534,6 +568,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="sec" id="sec-roi">
       <div class="sec-hdr"><h2 class="sec-title">ROI Calculator</h2><span class="sec-sub">The math that closes retainers</span></div>
       <div class="roi-card" id="roi-card"></div>
+    </div>
+
+    <!-- CLV INTELLIGENCE -->
+    <div class="sec" id="sec-clv">
+      <div class="sec-hdr"><h2 class="sec-title">Customer Lifetime Value Intelligence</h2><span class="sec-sub">Industry-researched · Specific to this business</span></div>
+      <div class="clv-card" id="clv-card"></div>
     </div>
 
     <!-- TIMELINE -->
@@ -808,9 +848,9 @@ async function runLoadAnim() {
 // CLAUDE API
 // ============================================================
 async function callClaude(url, industry, apiKey) {
-  var sys = 'You are an elite digital marketing analyst specializing in medical and healthcare practice websites. A marketing agency uses your analysis to sell monthly retainer services. Be honest, specific, and constructive. Always find real fixable problems. Write professionally, urgently, and empathetically — like a trusted advisor who genuinely wants this practice to grow.';
+  var sys = 'You are an elite digital marketing analyst and business intelligence researcher. A marketing agency uses your analysis to sell monthly retainer services to ANY type of business. You specialize in identifying business type, researching real industry-specific customer lifetime value data, and producing compelling audits that are tailored to the specific business you are analyzing. Be honest, specific, and constructive. Always find real fixable problems. Write professionally, urgently, and empathetically — like a trusted advisor who genuinely wants this business to grow. IMPORTANT: Never assume the business is medical — identify the actual business type from the URL and content, then tailor everything accordingly.';
 
-  var usr = 'Perform a comprehensive website audit for: ' + normUrl(url) + '\nIndustry: ' + industry + '\n\nReturn ONLY a valid JSON object. No markdown, no backticks, no preamble.\n\nThe JSON must have these exact top-level keys:\n- overallScore: number 1-100\n- overallGrade: string A/B/C/D/F\n- trafficEstimate: string like "200-500"\n- trafficPotential: string like "1500-3000"\n- competitorGap: string 2 sentences\n- estimatedNewPatients: number\n- executiveSummary: string 2 paragraphs separated by newline\n- priorityFixes: array of 3 objects {title, whyItMatters, timeToFix, expectedOutcome}\n- agencyRecommendations: array of 5 objects {service, icon, pitch, outcome, timeline, priceRange}\n- categories: array of exactly 10 objects in this order: SEO Foundation, AI Search Optimization, Page Speed & Core Web Vitals, Mobile Responsiveness, Content Quality & Freshness, Local SEO & Google Business Profile, Trust & Authority Signals, Social Proof & Engagement, Lead Capture & Conversion, Technical SEO Health\n\nEach category object must have:\n- name: string (exact name from list above)\n- score: number 1-10\n- explanation: string 2-3 sentences\n- quickWin: string\n- timeline: string\n- actionItems: array of 3 strings\n- agencyService: string\n- businessOutcome: string\n- monthlyValue: string\n\nBe honest and critical. Medical practice context throughout. Return pure JSON only.';
+  var usr = 'Perform a comprehensive website audit AND customer lifetime value analysis for: ' + normUrl(url) + '\nDropdown industry hint: ' + industry + '\n\nIMPORTANT: First identify the ACTUAL business type from the URL and website content — do not rely solely on the dropdown. The business could be anything: dentist, roofer, plumber, law firm, gym, restaurant, auto repair, real estate agent, accountant, spa, chiropractor, etc.\n\nReturn ONLY a valid JSON object. No markdown, no backticks, no preamble.\n\nThe JSON must have these exact top-level keys:\n\n=== BUSINESS INTELLIGENCE ===\n- businessType: string (the actual detected business type, e.g. "Dental Practice", "Roofing Company", "Personal Injury Law Firm")\n- businessTypeIcon: string (single relevant emoji)\n- clientWord: string (the correct word for this business customers, e.g. "patients", "clients", "customers", "homeowners", "members")\n- industryContext: string (2 sentences describing this business type and its digital marketing landscape)\n\n=== CUSTOMER LIFETIME VALUE ===\n- clv: object with these keys:\n  - minCLV: number (conservative customer lifetime value in dollars, based on real industry data)\n  - maxCLV: number (optimistic customer lifetime value in dollars)\n  - avgCLV: number (realistic midpoint)\n  - visitFrequency: string (how often a typical customer returns, e.g. "2x per year")\n  - avgTransactionValue: string (typical spend per visit/job, e.g. "$300-500 per visit")\n  - avgRetentionYears: number (how many years a typical customer stays)\n  - referralMultiplier: string (referral value, e.g. "Each client refers 1-2 others over their lifetime")\n  - clvBreakdown: array of objects {label, value} showing how CLV was calculated (e.g. [{label:"Annual spend", value:"$800/year"},{label:"Avg retention", value:"8 years"},{label:"Referral value", value:"$1,200"},{label:"Total CLV", value:"$7,600"}])\n  - geographicNote: string (1 sentence noting how geography/market size affects these numbers)\n  - industrySource: string (brief note on what data/reasoning supports these CLV figures)\n\n=== AUDIT SCORES (10 categories) ===\n- overallScore: set to 0\n- overallGrade: set to empty string\n- trafficEstimate: string like "200-500"\n- trafficPotential: string like "1500-3000"\n- competitorGap: string 2 sentences — use the correct client word\n- estimatedNewClients: number (realistic new clients per month after optimization — use industry-appropriate terminology)\n- executiveSummary: string 2 paragraphs — write directly to THIS type of business owner, use correct client word, mention specific CLV figures to make the ROI case\n- priorityFixes: array of 3 objects {title, whyItMatters, timeToFix, expectedOutcome} — use industry-specific language\n- agencyRecommendations: array of 5 objects {service, icon, pitch, outcome, timeline, priceRange} — pitch written for THIS business type\n- categories: array of exactly 10 objects in this order: SEO Foundation, AI Search Optimization, Page Speed & Core Web Vitals, Mobile Responsiveness, Content Quality & Freshness, Local SEO & Google Business Profile, Trust & Authority Signals, Social Proof & Engagement, Lead Capture & Conversion, Technical SEO Health\n\nEach category object must have:\n- name: string\n- score: number 1-10\n- explanation: string 2-3 sentences — specific to this business type\n- quickWin: string\n- timeline: string\n- actionItems: array of 3 strings\n- agencyService: string\n- businessOutcome: string — use correct client word and reference CLV where relevant\n- monthlyValue: string — use the actual CLV figures researched above\n\nBe honest and critical. Use this business type context throughout every field. Return pure JSON only.';
 
   var resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -849,6 +889,13 @@ async function callClaude(url, industry, apiKey) {
 }
 
 function normalizeReport(r) {
+  // Set defaults for new CLV fields
+  if (!r.clientWord) r.clientWord = 'client';
+  if (!r.businessType) r.businessType = 'Business';
+  if (!r.businessTypeIcon) r.businessTypeIcon = '🏢';
+  if (!r.clv) r.clv = { minCLV:1500, maxCLV:5000, avgCLV:3000, visitFrequency:'Varies', avgTransactionValue:'Varies', avgRetentionYears:3, referralMultiplier:'Each client may refer 1-2 others', clvBreakdown:[], geographicNote:'Market size affects these estimates.', industrySource:'Industry average estimates.' };
+  // Support legacy estimatedNewPatients field
+  if (!r.estimatedNewClients) r.estimatedNewClients = r.estimatedNewPatients || 5;
   // Ensure categories array
   if (!Array.isArray(r.categories) || r.categories.length < 5) {
     var names = ['SEO Foundation','AI Search Optimization','Page Speed & Core Web Vitals','Mobile Responsiveness','Content Quality & Freshness','Local SEO & Google Business Profile','Trust & Authority Signals','Social Proof & Engagement','Lead Capture & Conversion','Technical SEO Health'];
@@ -1043,6 +1090,7 @@ function renderResults(report, url) {
   renderPriority(report);
   renderTraffic(report);
   renderROI(report);
+  renderCLV(report);
   renderServices(report);
   renderExec(report, url, dateStr);
 
@@ -1233,26 +1281,75 @@ function renderTraffic(report) {
 }
 
 // ============================================================
+// RENDER CLV INTELLIGENCE CARD
+// ============================================================
+function renderCLV(report) {
+  var clv = report.clv || {};
+  var biz = report.businessType || 'Business';
+  var icon = report.businessTypeIcon || '🏢';
+  var cw = report.clientWord || 'client';
+  var cwCap = cw.charAt(0).toUpperCase() + cw.slice(1);
+  var minCLV = Number(clv.minCLV) || 1500;
+  var maxCLV = Number(clv.maxCLV) || 5000;
+  var avgCLV = Number(clv.avgCLV) || Math.round((minCLV+maxCLV)/2);
+
+  var breakdownRows = (clv.clvBreakdown || []).map(function(row) {
+    var isTotal = (row.label||'').toLowerCase().indexOf('total') >= 0;
+    return '<div class="clv-bk-row">' +
+      '<span class="clv-bk-label">' + (row.label||'') + '</span>' +
+      '<span class="clv-bk-val" style="' + (isTotal?'color:var(--gold);font-weight:700':'') + '">' + (row.value||'') + '</span>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('clv-card').innerHTML =
+    '<div class="clv-top">' +
+      '<div class="clv-industry-badge">' +
+        '<span class="clv-ind-icon">' + icon + '</span>' +
+        '<div class="clv-ind-name">' + biz + '</div>' +
+      '</div>' +
+      '<div class="clv-headline">' +
+        '<div class="clv-h1">Each new ' + cw + ' is worth $' + minCLV.toLocaleString() + '–$' + maxCLV.toLocaleString() + ' to your business</div>' +
+        '<div class="clv-h2">' + (report.industryContext || 'Based on industry research for this business type, accounting for transaction value, retention rate, and referral potential.') + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="clv-stats">' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Conservative CLV</div><div class="clv-stat-val">$' + minCLV.toLocaleString() + '</div><div class="clv-stat-sub">Per ' + cw + ', low estimate</div></div>' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Average CLV</div><div class="clv-stat-val">$' + avgCLV.toLocaleString() + '</div><div class="clv-stat-sub">Realistic midpoint</div></div>' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Optimistic CLV</div><div class="clv-stat-val">$' + maxCLV.toLocaleString() + '</div><div class="clv-stat-sub">High-value ' + cw + '</div></div>' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Visit Frequency</div><div class="clv-stat-val" style="font-size:1.1rem">' + (clv.visitFrequency||'Varies') + '</div><div class="clv-stat-sub">Typical return rate</div></div>' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Avg Per Transaction</div><div class="clv-stat-val" style="font-size:1.1rem">' + (clv.avgTransactionValue||'Varies') + '</div><div class="clv-stat-sub">Typical spend per visit/job</div></div>' +
+      '<div class="clv-stat"><div class="clv-stat-lbl">Avg Retention</div><div class="clv-stat-val" style="font-size:1.1rem">' + (clv.avgRetentionYears||3) + ' years</div><div class="clv-stat-sub">How long they stay</div></div>' +
+    '</div>' +
+    (breakdownRows ? '<div class="clv-breakdown"><div class="clv-bk-title">📊 How We Calculated This CLV</div>' + breakdownRows + '</div>' : '') +
+    '<div class="clv-geo-note">📍 ' + (clv.geographicNote||'Geographic market affects these numbers.') + ' · ' + (clv.industrySource||'Based on industry research.') + '</div>';
+}
+
+// ============================================================
 // RENDER ROI
 // ============================================================
 function renderROI(report) {
-  var pts = Number(report.estimatedNewPatients) || 5;
-  var minLTV = 1500, maxLTV = 3500;
+  var clv = report.clv || {};
+  var cw = report.clientWord || 'client';
+  var cwCap = cw.charAt(0).toUpperCase() + cw.slice(1);
+  var pts = Number(report.estimatedNewClients) || Number(report.estimatedNewPatients) || 5;
+  var minLTV = Number(clv.minCLV) || 1500;
+  var maxLTV = Number(clv.maxCLV) || 5000;
   var minRev = pts * minLTV, maxRev = pts * maxLTV;
   var retainer = 1497;
   var annMin = minRev * 12, annMax = maxRev * 12;
   var netMin = annMin - retainer * 12, netMax = annMax - retainer * 12;
+  var beClients = Math.ceil(retainer / ((minLTV + maxLTV) / 2));
   var spendPct = Math.min(Math.round((retainer * 12) / annMax * 100), 25);
 
   document.getElementById('roi-card').innerHTML =
     '<div class="roi-grid">' +
-      '<div class="rstat"><div class="rv">$' + minLTV.toLocaleString() + '–$' + maxLTV.toLocaleString() + '</div><div class="rl">Avg Patient Lifetime Value</div></div>' +
+      '<div class="rstat"><div class="rv">$' + minLTV.toLocaleString() + '–$' + maxLTV.toLocaleString() + '</div><div class="rl">Avg ' + cwCap + ' Lifetime Value</div></div>' +
       '<div class="rdiv">×</div>' +
-      '<div class="rstat"><div class="rv">' + pts + '+</div><div class="rl">Est. New Patients/Month After Optimization</div></div>' +
+      '<div class="rstat"><div class="rv">' + pts + '+</div><div class="rl">Est. New ' + cwCap + 's/Month After Optimization</div></div>' +
       '<div class="rdiv">=</div>' +
       '<div class="rstat"><div class="rv">$' + minRev.toLocaleString() + '–$' + maxRev.toLocaleString() + '</div><div class="rl">Est. Monthly Revenue Increase</div></div>' +
     '</div>' +
-    '<div class="roi-be"><div class="beh">✓ Retainer pays for itself in 1–2 new patients</div><div class="bes">Retainer: $' + retainer.toLocaleString() + '/month · Just 1 new patient per month covers the full cost</div></div>' +
+    '<div class="roi-be"><div class="beh">✓ Retainer pays for itself in just ' + beClients + ' new ' + (beClients===1?cw:cw+'s') + '</div><div class="bes">Retainer: $' + retainer.toLocaleString() + '/month · Each ' + cw + ' is worth $' + Math.round((minLTV+maxLTV)/2).toLocaleString() + ' — just ' + beClients + ' covers your full investment</div></div>' +
     '<div class="roi-proj">' +
       '<div class="proj-title">12-Month Revenue Projection</div>' +
       '<div class="proj-row"><span class="proj-lbl">Year 1 Revenue</span><div class="proj-bar"><div class="proj-fill" style="width:90%;background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div><span class="proj-val">$' + Math.round(annMax/1000) + 'K+</span></div>' +
