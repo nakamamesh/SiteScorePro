@@ -668,12 +668,17 @@ async function startAudit() {
   openBlockIdx = -1;
   showScreen('load');
   document.getElementById('load-url').textContent = normUrl(url);
-  await runLoadAnim();
   try {
-    var results = await Promise.allSettled([callClaude(url, industry, apiKey), callPageSpeed(url)]);
-    if (results[0].status !== 'fulfilled') throw new Error(results[0].reason && results[0].reason.message ? results[0].reason.message : 'AI analysis failed');
-    var report = results[0].value;
-    if (results[1].status === 'fulfilled' && results[1].value) mergePageSpeed(report, results[1].value);
+    // Run animation AND API calls in parallel — no waiting 14s before fetching
+    var results = await Promise.allSettled([
+      runLoadAnim(),
+      callClaude(url, industry, apiKey),
+      callPageSpeed(url)
+    ]);
+    // Index 0 = animation (always fulfilled), 1 = Claude, 2 = PageSpeed
+    if (results[1].status !== 'fulfilled') throw new Error(results[1].reason && results[1].reason.message ? results[1].reason.message : 'AI analysis failed');
+    var report = results[1].value;
+    if (results[2].status === 'fulfilled' && results[2].value) mergePageSpeed(report, results[2].value);
     currentReport = report;
     renderResults(report, url);
     saveHist(getDomain(url), report.overallScore, report.overallGrade, url);
@@ -703,7 +708,7 @@ async function runLoadAnim() {
     var spinner = document.createElement('div'); spinner.className = 'step-spinner';
     stepEl.insertBefore(spinner, stepEl.firstChild);
     pf.style.width = ((i + 1) / 10 * 85) + '%';
-    await sleep(1350);
+    await sleep(1100);
   }
   pf.style.width = '100%';
 }
