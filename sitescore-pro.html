@@ -554,6 +554,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="res-header">
     <div class="res-meta"><div class="lbl">Audited</div><div class="val" id="r-url"></div></div>
     <div class="res-meta"><div class="lbl">Date</div><div class="val" id="r-date"></div></div>
+    <div id="r-biz-badge" style="display:none;align-items:center;gap:6px;background:var(--goldd);border:1px solid var(--goldb);padding:6px 12px;border-radius:100px;font-size:.78rem;font-weight:600;color:var(--gold);white-space:nowrap"></div>
     <div class="grade-badge" id="r-grade"></div>
     <div class="score-hero"><div class="num" id="r-score"></div><div class="lbl">Overall Score</div></div>
     <div class="traffic-badge"><div class="lbl">Est. Monthly Traffic</div><div class="val" id="r-traffic"></div></div>
@@ -805,7 +806,51 @@ function showScreen(name) {
   document.getElementById('s-load').classList.toggle('hidden', name !== 'load');
   document.getElementById('s-res').classList.toggle('hidden', name !== 'res');
 }
-function goLand() { showScreen('land'); }
+function goLand() {
+  // FULL STATE WIPE — blank slate for every new audit
+  currentReport = null;
+  currentUrl = '';
+  currentIndustry = '';
+  openBlockIdx = -1;
+
+  // Clear all rendered report containers
+  var clearIds = ['blocks-grid','score-legend','detail-drawer','total-band',
+    'priority-grid','traffic-grid','roi-card','clv-card','svc-grid','exec-card',
+    'r-url','r-date','r-score','r-traffic'];
+  clearIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+
+  // Reset grade badge
+  var gb = document.getElementById('r-grade');
+  if (gb) { gb.textContent = ''; gb.className = 'grade-badge'; gb.style = ''; }
+
+  // Reset detail drawer state
+  var drawer = document.getElementById('detail-drawer');
+  if (drawer) drawer.classList.remove('open');
+
+  // Clear input fields for fresh entry
+  var urlInp = document.getElementById('url-inp');
+  var indInp = document.getElementById('ind-inp');
+  var geoInp = document.getElementById('geo-inp');
+  if (urlInp) urlInp.value = '';
+  if (indInp) { indInp.value = ''; }
+  if (geoInp) geoInp.value = '';
+
+  // Reset industry badge
+  var badge = document.getElementById('ind-detect-badge');
+  var hint = document.getElementById('ind-hint');
+  if (badge) badge.style.display = 'none';
+  if (hint) hint.textContent = 'Leave blank to let AI detect the industry automatically from the website.';
+
+  // Clear any error messages
+  var errEl = document.getElementById('land-err');
+  if (errEl) errEl.innerHTML = '';
+
+  showScreen('land');
+  window.scrollTo(0, 0);
+}
 
 // ============================================================
 // HISTORY
@@ -830,9 +875,9 @@ function renderHist() {
 }
 
 function rerun(url) {
+  goLand(); // full reset first
   document.getElementById('url-inp').value = url;
   toggleHist();
-  showScreen('land');
 }
 
 function toggleHist() { document.getElementById('hist-panel').classList.toggle('open'); }
@@ -854,9 +899,22 @@ async function startAudit() {
   if (!url) { showLandErr('Please enter a website URL.'); return; }
   var apiKey = sessionStorage.getItem('ss_api');
   if (!apiKey) { openModal('m-api'); return; }
+  // Hard reset all state before new audit
+  currentReport = null;
   currentUrl = url;
   currentIndustry = industryOverride;
   openBlockIdx = -1;
+
+  // Wipe all previous report DOM so nothing from last audit bleeds through
+  var wipeIds = ['blocks-grid','score-legend','total-band','priority-grid',
+    'traffic-grid','roi-card','clv-card','svc-grid','exec-card'];
+  wipeIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '<div style="opacity:.3;font-size:.8rem;padding:16px;color:var(--wmut)">Loading...</div>';
+  });
+  var drawer = document.getElementById('detail-drawer');
+  if (drawer) { drawer.classList.remove('open'); drawer.innerHTML = ''; }
+
   showScreen('load');
   document.getElementById('load-url').textContent = normUrl(url);
   try {
@@ -891,13 +949,21 @@ function showLandErr(msg) {
 // ============================================================
 async function runLoadAnim() {
   var pf = document.getElementById('prog-fill');
+  var icons = ['🔍','🤖','📱','⚡','📍','🛡️','💬','📊','💰','📋'];
+  var texts = ['Scanning SEO foundation...','Checking AI search readiness...','Analyzing mobile experience...','Running speed diagnostics...','Evaluating local SEO...','Reviewing trust signals...','Checking lead capture tools...','Calculating traffic estimates...','Building ROI projections...','Generating full report...'];
+
+  // Ensure all steps are reset before animating
+  for (var r = 0; r < 10; r++) {
+    var el = document.getElementById('ls' + r);
+    if (el) { el.classList.remove('active','done'); el.style.opacity='0'; el.innerHTML = '<span>' + icons[r] + '</span><span>' + texts[r] + '</span>'; }
+  }
+
   for (var i = 0; i < 10; i++) {
     var stepEl = document.getElementById('ls' + i);
     var prevEl = i > 0 ? document.getElementById('ls' + (i-1)) : null;
-    if (prevEl) { prevEl.classList.remove('active'); prevEl.classList.add('done'); prevEl.querySelector('span:first-child').textContent = '✓'; }
+    if (prevEl) { prevEl.classList.remove('active'); prevEl.classList.add('done'); prevEl.innerHTML = '<span>✓</span><span>' + texts[i-1] + '</span>'; }
     stepEl.classList.add('active');
-    var spinner = document.createElement('div'); spinner.className = 'step-spinner';
-    stepEl.insertBefore(spinner, stepEl.firstChild);
+    stepEl.innerHTML = '<div class="step-spinner"></div><span>' + texts[i] + '</span>';
     pf.style.width = ((i + 1) / 10 * 85) + '%';
     await sleep(1100);
   }
@@ -1144,6 +1210,13 @@ function renderResults(report, url) {
   document.getElementById('r-date').textContent = dateStr;
   document.getElementById('r-score').textContent = score + '/100';
   document.getElementById('r-traffic').textContent = (report.trafficEstimate || '--') + '/mo';
+
+  // Show detected business type in header
+  var bizBadge = document.getElementById('r-biz-badge');
+  if (bizBadge && report.businessType) {
+    bizBadge.textContent = (report.businessTypeIcon || '🏢') + ' ' + report.businessType;
+    bizBadge.style.display = 'inline-flex';
+  }
 
   var gb = document.getElementById('r-grade');
   gb.textContent = grade;
