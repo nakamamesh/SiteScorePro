@@ -1095,12 +1095,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="landing-hero">
     <div class="landing-eyebrow">⚡ AI-Powered Sales Intelligence</div>
     <h1 class="landing-title">Reveal the gaps.<br>Win the client.</h1>
-    <p class="landing-subtitle">Generate a compelling, data-backed website audit report in under 60 seconds. Turn any prospect URL into a retainer-ready sales presentation.</p>
+    <p class="landing-subtitle">Generate a compelling, data-backed website audit report in under 60 seconds. Turn any client URL into a retainer-ready sales presentation.</p>
   </div>
 
   <div class="landing-form card-gold-line">
     <div class="form-group">
-      <label class="form-label">Prospect Website URL</label>
+      <label class="form-label">Client Website URL</label>
       <div class="url-input-wrap">
         <span class="url-icon">🌐</span>
         <input type="text" id="url-input" class="form-input" placeholder="https://drjohnsonmedical.com" />
@@ -1108,8 +1108,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Your Agency Name</label>
-        <input type="text" id="agency-input" class="form-input" placeholder="Peak Marketing Co." />
+        <label class="form-label">Agency Name</label>
+        <input type="text" id="agency-input" class="form-input" value="ReGenEdge Ventures LLC" readonly style="opacity:0.7;cursor:default" />
       </div>
       <div class="form-group">
         <label class="form-label">Industry Focus</label>
@@ -1405,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== SETTINGS =====
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('sitescore_settings') || '{}');
-  if (s.agencyName) document.getElementById('agency-input').value = s.agencyName;
+  document.getElementById('agency-input').value = 'ReGenEdge Ventures LLC';
   const apiKey = sessionStorage.getItem('anthropic_api_key');
   if (s.agencyName) document.getElementById('setting-agency-name').value = s.agencyName;
   if (s.agencyPhone) document.getElementById('setting-agency-phone').value = s.agencyPhone;
@@ -1424,7 +1424,7 @@ function saveSettings() {
   localStorage.setItem('sitescore_settings', JSON.stringify(settings));
   const apiKey = document.getElementById('setting-api-key').value.trim();
   if (apiKey) sessionStorage.setItem('anthropic_api_key', apiKey);
-  if (settings.agencyName) document.getElementById('agency-input').value = settings.agencyName;
+  document.getElementById('agency-input').value = 'ReGenEdge Ventures LLC';
   document.getElementById('settings-status').innerHTML = '<div class="success-box">✓ Settings saved successfully!</div>';
   setTimeout(() => closeModal('modal-settings'), 1200);
 }
@@ -1500,7 +1500,7 @@ function toggleHistory() {
 // ===== ANALYSIS FLOW =====
 async function startAnalysis() {
   const url = document.getElementById('url-input').value.trim();
-  const agency = document.getElementById('agency-input').value.trim() || 'Your Agency';
+  const agency = 'ReGenEdge Ventures LLC';
   const industry = document.getElementById('industry-select').value;
 
   if (!url) {
@@ -1650,14 +1650,51 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble. Pure JSON object
   // Strip any markdown fences
   text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   
+  let parsed;
   try {
-    return JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch {
-    // Try to extract JSON object
     const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    throw new Error('Could not parse AI response. Please try again.');
+    if (match) parsed = JSON.parse(match[0]);
+    else throw new Error('Could not parse AI response. Please try again.');
   }
+  return normalizeReport(parsed);
+}
+
+function normalizeReport(report) {
+  if (!report.categories || !Array.isArray(report.categories)) {
+    const catNames = [
+      'SEO Foundation','AI Search Optimization','Page Speed & Core Web Vitals',
+      'Mobile Responsiveness','Content Quality & Freshness',
+      'Local SEO & Google Business Profile','Trust & Authority Signals',
+      'Social Proof & Engagement','Lead Capture & Conversion','Technical SEO Health'
+    ];
+    const cats = [];
+    for (const name of catNames) {
+      if (report[name] && typeof report[name] === 'object') {
+        cats.push({ name, ...report[name] }); continue;
+      }
+      const key = Object.keys(report).find(k =>
+        k.toLowerCase().replace(/[^a-z]/g,'').includes(name.toLowerCase().replace(/[^a-z]/g,'').slice(0,6))
+      );
+      if (key && report[key] && typeof report[key] === 'object' && report[key].score !== undefined) {
+        cats.push({ name, ...report[key] });
+      }
+    }
+    report.categories = cats.length >= 5 ? cats :
+      Object.entries(report)
+        .filter(([k,v]) => v && typeof v === 'object' && !Array.isArray(v) && v.score !== undefined)
+        .map(([name, data]) => ({ name, ...data }));
+  }
+  if (!report.overallScore) {
+    const scores = report.categories.map(c => Number(c.score) || 5);
+    report.overallScore = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length * 10);
+  }
+  if (!report.overallGrade) {
+    const s = report.overallScore;
+    report.overallGrade = s>=90?'A':s>=75?'B':s>=55?'C':s>=40?'D':'F';
+  }
+  return report;
 }
 
 // ===== PAGESPEED API =====
@@ -1742,9 +1779,37 @@ function renderResults(report, url, agency) {
   renderExecSummary(report, url, agency, dateStr);
 }
 
+function normalizeCategories(report) {
+  // Handle if Claude returns categories as an object instead of array
+  if (Array.isArray(report.categories)) return report.categories;
+  
+  // If it's an object with category names as keys
+  if (report.categories && typeof report.categories === 'object') {
+    return Object.entries(report.categories).map(([name, data]) => ({
+      name, ...data
+    }));
+  }
+
+  // If Claude put categories at top level by name
+  const catNames = ['SEO Foundation','AI Search Optimization','Page Speed & Core Web Vitals','Mobile Responsiveness','Content Quality & Freshness','Local SEO & Google Business Profile','Trust & Authority Signals','Social Proof & Engagement','Lead Capture & Conversion','Technical SEO Health'];
+  const cats = [];
+  for (const name of catNames) {
+    const key = Object.keys(report).find(k => k.toLowerCase().replace(/[^a-z]/g,'').includes(name.toLowerCase().replace(/[^a-z]/g,'').slice(0,8)));
+    if (key && typeof report[key] === 'object' && report[key].score) {
+      cats.push({ name, ...report[key] });
+    }
+  }
+  if (cats.length > 0) return cats;
+
+  // Last resort: scan all object values that have a score property
+  return Object.entries(report)
+    .filter(([k,v]) => v && typeof v === 'object' && v.score && !Array.isArray(v))
+    .map(([name, data]) => ({ name, ...data }));
+}
+
 function renderScoreGrid(report) {
   const grid = document.getElementById('score-grid');
-  const categories = report.categories || [];
+  const categories = normalizeCategories(report);
   
   grid.innerHTML = categories.map((cat, i) => {
     const meta = CATEGORY_META[cat.name] || { icon: '📊', idx: i };
